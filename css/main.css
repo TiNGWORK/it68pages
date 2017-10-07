@@ -916,7 +916,7 @@ embed,iframe,object,video {
     background-color: #333;
     font-size: 12px;
     position: relative;
-    z-index: 3
+    z-index: 12;
 }
 
 .footer-sidebar {
@@ -2008,4 +2008,22 @@ input[type="text"] {
 
 .disqus-loader-bubble {
     background-image: none !important
+}
+
+th,td {
+    background: #009c74;
+    color: #fff;
+    padding: 2px 8px;
+}
+
+.highlight th, .highlight td{
+    background: transparent;
+    padding: 0 0
+}
+
+figure {
+    -webkit-margin-before: 0;
+    -webkit-margin-after: 0;
+    -webkit-margin-start: 0;
+    -webkit-margin-end: 0;
 }
