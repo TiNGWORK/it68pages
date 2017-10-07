@@ -109,12 +109,12 @@ pre {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-    margin-bottom: 24px;
+    /* margin-bottom: 24px; */
     max-width: 100%;
     overflow: auto;
     padding: 12px;
     white-space: pre;
-    word-wrap: break-all
+    word-wrap: break-all;
 }
 
 ol,ul {
@@ -530,8 +530,7 @@ embed,iframe,object,video {
     display: inline-block
 }
 
-.paging-navigation .page-numbers,.paging-navigation li span,.paging-navigation li a,
-.paging-navigation .page-numbers,.paging-navigation span,.paging-navigation a {
+.paging-navigation .page-numbers,.paging-navigation li span,.paging-navigation li a, .paging-navigation .page-numbers,.paging-navigation span,.paging-navigation a {
     display: inline-block;
     font-size: 12px;
     font-weight: 900;
@@ -540,14 +539,12 @@ embed,iframe,object,video {
     text-transform: uppercase
 }
 
-.paging-navigation a,.paging-navigation li span.current.prev,.paging-navigation li span.current.next,
-.paging-navigation a,.paging-navigation span.current.prev,.paging-navigation span.current.next {
+.paging-navigation a,.paging-navigation li span.current.prev,.paging-navigation li span.current.next, .paging-navigation a,.paging-navigation span.current.prev,.paging-navigation span.current.next {
     color: #999;
     background: #f8f8f8
 }
 
-.paging-navigation .page-numbers.current,.paging-navigation li span.current,.paging-navigation li a.current,
-.paging-navigation .page-numbers.current,.paging-navigation span.current,.paging-navigation a.current {
+.paging-navigation .page-numbers.current,.paging-navigation li span.current,.paging-navigation li a.current, .paging-navigation .page-numbers.current,.paging-navigation span.current,.paging-navigation a.current {
     background: #019c74;
     color: #fff
 }
@@ -1946,8 +1943,8 @@ body,button,input,select,textarea {
 }
 
 pre {
-    background-color: #019C74;
-    color: #F8F8F8;
+    background-color: transparent;
+    color: #ffffff;
 }
 
 code {
@@ -2016,9 +2013,26 @@ th,td {
     padding: 2px 8px;
 }
 
-.highlight th, .highlight td{
+.gutter pre {
+    color: #b9b9b9;
+    text-align: right;
+    user-select: none;
+}
+
+.code pre, .gutter pre {
+    border: 0;
+}
+
+.highlight {
+    border: 0;
+    margin-bottom: 24px;
+    background: #656565;
+}
+
+.highlight th, .highlight td {
     background: transparent;
-    padding: 0 0
+    padding: 0 0;
+    margin: 0;
 }
 
 figure {
@@ -2026,4 +2040,9 @@ figure {
     -webkit-margin-after: 0;
     -webkit-margin-start: 0;
     -webkit-margin-end: 0;
+}
+
+.highlight .line {
+    font-size: 0.9em;
+    font-family: monospace;
 }
