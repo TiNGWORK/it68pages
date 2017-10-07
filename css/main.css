@@ -2027,6 +2027,7 @@ th,td {
     border: 0;
     margin-bottom: 24px;
     background: #656565;
+    overflow-x: scroll;
 }
 
 .highlight th, .highlight td {
