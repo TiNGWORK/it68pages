@@ -3,6 +3,30 @@
   
     
     <entry>
+      <title><![CDATA[使用hexo碰到的一个图片坑]]></title>
+      <url>/2017/10/08/markdown-translated-to-html-responsive-image/</url>
+      <content type="html"><![CDATA[<p>如果用过 hexo, 你应该知道 hexo 是使用 markdown 书写文章的.<br>这几天我闲的慌把我博客换成了 hexo 然后就碰到了一个问题.<br>以前我用 Ghost 时候写文章很多内容的图片, 都是两倍图的.<br>但是转成 markdown 后, 全部用<code>![title](image)</code>语法来插图, 不再是 html.<br>就导致我的文章中的两倍图无法渲染成 srcset.</p>
+<p>迫于无奈, 我妥协了, 使用了这个 trick</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="selector-class">.entry-content</span> <span class="selector-tag">img</span>&#123;</div><div class="line">    <span class="attribute">zoom</span>: <span class="number">0.5</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后以后写文章我只传两倍图, 保证像素不渣.</p>
+<p>哦, 忘了说. 我从 ghost 换到 hexo 了.<br>不过也没关系, 反正我博客也没什么人.<br>因为disqus被墙, 我等有空再想办法基于API写个disqus程序来展示和发表评论. 暂时没时间移植过来了.</p>
+<hr>
+<h4 id="用hexo碰到的坑"><a href="#用hexo碰到的坑" class="headerlink" title="用hexo碰到的坑"></a>用hexo碰到的坑</h4><ul>
+<li>当分类为中文时候, 如果没在 category_map 声明定义, 将会在很多主题中无法正常展示列表和详情.</li>
+<li>markdown图片不支持响应式加载两倍图.</li>
+</ul>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[Night's watch -- 自动漏洞扫描工具]]></title>
       <url>/2016/06/09/nights-watch-a-automatic-web-application-security-scanner/</url>
       <content type="html"><![CDATA[<h4 id="功能介绍"><a href="#功能介绍" class="headerlink" title="功能介绍"></a>功能介绍</h4><p>Night’s watch是一款自动化漏洞检测工具, 旨在为安全从业人员做基础重复的请求和判断的工作量, 为安全从业人员节省时间.<br>下面有个演示视频.</p>
