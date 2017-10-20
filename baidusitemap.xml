@@ -4,12 +4,31 @@
 
     
   <url>
-    <loc>https://www.it68.com.cn/2015/08/06/nginx-ssl-sha256-support-xp-ie-and-ie7/</loc>
-    <lastmod>2017-10-08T00:05:11.000Z</lastmod>
+    <loc>https://www.it68.com.cn/2017/10/14/make-your-sublime-php-ide/</loc>
+    <lastmod>2017-10-20T20:17:39.144Z</lastmod>
     <data>
         <display>
-        <title>NGINX简单配置 让SHA256证书支持XP SP1/SP2</title>
-        <pubTime>2015-08-06T07:53:31.000Z</pubTime>
+        <title>把你的 Sublime Text 3 打造成 PHP 的 IDE</title>
+        <pubTime>2017-10-13T19:24:59.000Z</pubTime>
+        
+         
+           
+             
+              <breadCrumb title="技术文章" url="https://www.it68.com.cn/categories/tech/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+    
+  <url>
+    <loc>https://www.it68.com.cn/2017/10/08/markdown-translated-to-html-responsive-image/</loc>
+    <lastmod>2017-10-13T19:24:16.000Z</lastmod>
+    <data>
+        <display>
+        <title>使用hexo碰到的一个图片坑</title>
+        <pubTime>2017-10-07T21:38:42.000Z</pubTime>
         
          
            
@@ -22,12 +41,12 @@
 
     
   <url>
-    <loc>https://www.it68.com.cn/2017/10/08/markdown-translated-to-html-responsive-image/</loc>
-    <lastmod>2017-10-07T21:48:42.000Z</lastmod>
+    <loc>https://www.it68.com.cn/2015/08/06/nginx-ssl-sha256-support-xp-ie-and-ie7/</loc>
+    <lastmod>2017-10-08T00:05:11.000Z</lastmod>
     <data>
         <display>
-        <title>使用hexo碰到的一个图片坑</title>
-        <pubTime>2017-10-07T21:38:42.000Z</pubTime>
+        <title>NGINX简单配置 让SHA256证书支持XP SP1/SP2</title>
+        <pubTime>2015-08-06T07:53:31.000Z</pubTime>
         
          
            

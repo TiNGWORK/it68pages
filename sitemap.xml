@@ -2,16 +2,30 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://www.it68.com.cn/2015/08/06/nginx-ssl-sha256-support-xp-ie-and-ie7/</loc>
+    <loc>https://www.it68.com.cn/2017/10/14/make-your-sublime-php-ide/</loc>
     
-    <lastmod>2017-10-08T00:05:11.000Z</lastmod>
+    <lastmod>2017-10-20T20:17:39.144Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://www.it68.com.cn/404.html</loc>
+    
+    <lastmod>2017-10-20T20:16:15.645Z</lastmod>
     
   </url>
   
   <url>
     <loc>https://www.it68.com.cn/2017/10/08/markdown-translated-to-html-responsive-image/</loc>
     
-    <lastmod>2017-10-07T21:48:42.000Z</lastmod>
+    <lastmod>2017-10-13T19:24:16.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://www.it68.com.cn/2015/08/06/nginx-ssl-sha256-support-xp-ie-and-ie7/</loc>
+    
+    <lastmod>2017-10-08T00:05:11.000Z</lastmod>
     
   </url>
   

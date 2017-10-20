@@ -3,6 +3,21 @@
   
     
     <entry>
+      <title><![CDATA[把你的 Sublime Text 3 打造成 PHP 的 IDE]]></title>
+      <url>/2017/10/14/make-your-sublime-php-ide/</url>
+      <content type="html"><![CDATA[<p>还在编写中….</p>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[使用hexo碰到的一个图片坑]]></title>
       <url>/2017/10/08/markdown-translated-to-html-responsive-image/</url>
       <content type="html"><![CDATA[<p>如果用过 hexo, 你应该知道 hexo 是使用 markdown 书写文章的.<br>这几天我闲的慌把我博客换成了 hexo 然后就碰到了一个问题.<br>以前我用 Ghost 时候写文章很多内容的图片, 都是两倍图的.<br>但是转成 markdown 后, 全部用<code>![title](image)</code>语法来插图, 不再是 html.<br>就导致我的文章中的两倍图无法渲染成 srcset.</p>
@@ -429,6 +444,13 @@
 <li>2014年度阿里巴巴高级安全专家证书</li>
 <li>2012年阿里巴巴云计算全国开发者大赛第2名 </li>
 </ul>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[404]]></title>
+      <url>/404.html</url>
+      <content type="html"><![CDATA[<p>你对我博客做了什么，竟然找不到该页了</p>
 ]]></content>
     </entry>
     
