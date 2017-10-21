@@ -2935,8 +2935,8 @@
             d
         };
         h("https://c.disquscdn.com/next/embed/styles/lounge.6320e20b57d877f77ba9dc866ff7fb10.css", "style"),
-        h("https://c.disquscdn.com/next/embed/common.bundle.94d68a3431b70c72522e54f84b601a07.js"),
-        h("https://c.disquscdn.com/next/embed/lounge.bundle.3cba60108302f0c9d0a090529d661582.js"),
+        h("https://cdn.jsdelivr.net/gh/tingwork/it68pages@1.12/js/disqus/common.bundle.js"),
+        h("https://cdn.jsdelivr.net/gh/tingwork/it68pages@1.12/js/disqus/lounge.bundle.js"),
         h("https://disquscom.b0.upaiyun.com/next/config.js")
     }({})
 }(this),
