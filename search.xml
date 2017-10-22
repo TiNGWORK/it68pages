@@ -5,7 +5,27 @@
     <entry>
       <title><![CDATA[把你的 Sublime Text 3 打造成 PHP 的 IDE]]></title>
       <url>/2017/10/14/make-your-sublime-php-ide/</url>
-      <content type="html"><![CDATA[<p>还在编写中….</p>
+      <content type="html"><![CDATA[<p>一直以来，Sublime Text均只是作为一款编辑器，而非IDE（集成开发环境）。包括俺开发PHP时候，Sublime Text包管理中也很难找到支持真正意义上的PHP集成（包括定义位置跳转、自动补全两个基本功能）。</p>
+<p>在不久前微软VSCode（Visiual Studio Code）团队向社会输出了他们的Language Server ( <a href="https://langserver.org/" target="_blank" rel="external">https://langserver.org/</a> )Protocol协议，讲市面上五花八门各种编辑器IDE的补全实现标准化。包括 Code completion、Hover、Jump to def、Find references、Symbol search 和 Diagnostics 等功能的规范化。</p>
+<p>LSP包含两部分组成:</p>
+<ul>
+<li>Language Server</li>
+<li>Language Client </li>
+</ul>
+<p>Language Server是启动的Demon（走协议）或Cli（标准输出stdout）通信的服务， Language Client向其发出请求， Language Server按照约定响应Client需要的数据，最后再由Client实现对编辑器插件指令的转换，实现IDE补全、跳转等功能。</p>
+<p>Sublime Text的插件由这两个Github仓库组成:</p>
+<ul>
+<li><a href="https://github.com/tomv564/LSP" target="_blank" rel="external">https://github.com/tomv564/LSP</a></li>
+<li><a href="https://github.com/felixfbecker/php-language-server" target="_blank" rel="external">https://github.com/felixfbecker/php-language-server</a></li>
+</ul>
+<p>安装方法:</p>
+<ul>
+<li>将你 <code>composer.json</code> 的 “minimum-stability” 设置成 “dev”（一定要做这一步，因为composer默认的 minimum-stability 不是dev）</li>
+<li>composer require felixfbecker/php-language-server</li>
+<li>Sublime Text &gt; Package Controller &gt; Install &gt; LSP 关键字 &gt; 安装</li>
+<li>修改LSP的PHP补全为如下: </li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">待添加。。。</div></pre></td></tr></table></figure>
 ]]></content>
       
         <categories>
