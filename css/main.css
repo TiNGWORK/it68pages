@@ -1977,7 +1977,9 @@ code {
     text-overflow: ellipsis;
     display: inline-block;
     max-width: 80%;
-    overflow: hidden
+    overflow: hidden;
+    background: transparent;
+    padding: 0 0;
 }
 
 .text-brand-wrap {
