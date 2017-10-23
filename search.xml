@@ -29,7 +29,7 @@
 <p>使用方法:</p>
 <ul>
 <li>跳转定义: alt+ctrl</li>
-<li>自动补全: <code>-&gt;</code>、<code>::</code>、’$’</li>
+<li>自动补全: <code>-&gt;</code>、<code>::</code>、<code>$</code></li>
 </ul>
 ]]></content>
       
