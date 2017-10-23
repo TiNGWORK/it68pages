@@ -419,6 +419,13 @@
   
     
     <entry>
+      <title><![CDATA[404]]></title>
+      <url>/404.html</url>
+      <content type="html"><![CDATA[<p>你对我博客做了什么，竟然找不到该页了</p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[关于我]]></title>
       <url>/about/index.html</url>
       <content type="html"><![CDATA[<p>我叫蓝小灰，男，90后，PHPer，重庆人，未婚，<br>常年活动在上海，<br>喜欢美女，游戏，咖啡和代码，<br>真人比照片帅，这是真的🙈</p>
@@ -469,13 +476,6 @@
 <li>2014年度阿里巴巴高级安全专家证书</li>
 <li>2012年阿里巴巴云计算全国开发者大赛第2名 </li>
 </ul>
-]]></content>
-    </entry>
-    
-    <entry>
-      <title><![CDATA[404]]></title>
-      <url>/404.html</url>
-      <content type="html"><![CDATA[<p>你对我博客做了什么，竟然找不到该页了</p>
 ]]></content>
     </entry>
     

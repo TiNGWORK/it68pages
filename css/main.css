@@ -1,12 +1,13 @@
 @font-face {
     font-family: FZLanTingHeiS-EL-GB;
-    src: url(//it68-file-alimmdn-com.alikunlun.com/Fp9q62JZhLXxSKAzY95ouVxgtaWf?#iefix) format('embedded-opentype'),url(//it68-file-alimmdn-com.alikunlun.com/Ftut4-8i3-50s610GxxaWG3pojPw) format('woff'),url(//it68-file-alimmdn-com.alikunlun.com/FskTGbOTxj7RjeVixSbpb4j7bOYa) format('truetype'),url(//it68-file-alimmdn-com.alikunlun.com/FunP6QKZDz9frs2s8e9BgDZEV3Cp#FZLTXHJW--GB1-0) format('svg')
+    src: url(//cdn.jsdelivr.net/gh/tingwork/it68pages@1.17/font/FZLanTingHeiS-EL-GB.eot);
+    src: url(//cdn.jsdelivr.net/gh/tingwork/it68pages@1.17/font/FZLanTingHeiS-EL-GB.eot?#iefix) format('embedded-opentype'),url(//cdn.jsdelivr.net/gh/tingwork/it68pages@1.17/font/FZLanTingHeiS-EL-GB.woff) format('woff'),url(//cdn.jsdelivr.net/gh/tingwork/it68pages@1.17/font/FZLanTingHeiS-EL-GB.ttf) format('truetype'),url(//cdn.jsdelivr.net/gh/tingwork/it68pages@1.17/font/FZLanTingHeiS-EL-GB.svg#FZLTXHJW--GB) format('svg')
 }
 
 @font-face {
     font-family: it68icon;
-    src: url(//it68-file-alimmdn-com.alikunlun.com/Fh9Lbl1otVRocZtrG24Pm-aHSWyT);
-    src: url(//it68-file-alimmdn-com.alikunlun.com/Fh9Lbl1otVRocZtrG24Pm-aHSWyT?#iefix) format('embedded-opentype'),url(//it68-file-alimmdn-com.alikunlun.com/FkFBblQa-g9RcNgqhcxIp3rFyBuH) format('woff'),url(//it68-file-alimmdn-com.alikunlun.com/Fk9V143ocOraHuAZHN9kEFK5dgIy) format('truetype'),url(//it68-file-alimmdn-com.alikunlun.com/FhL9Sqj6rg6ziatZlevrYInEQiyS#it68icon) format('svg')
+    src: url(//cdn.jsdelivr.net/gh/tingwork/it68pages@1.17/font/it68icon.eot);
+    src: url(//cdn.jsdelivr.net/gh/tingwork/it68pages@1.17/font/it68icon.eot?#iefix) format('embedded-opentype'),url(//cdn.jsdelivr.net/gh/tingwork/it68pages@1.17/font/it68icon.woff) format('woff'),url(//cdn.jsdelivr.net/gh/tingwork/it68pages@1.17/font/it68icon.ttf) format('truetype'),url(//cdn.jsdelivr.net/gh/tingwork/it68pages@1.17/font/it68icon.svg#it68icon) format('svg')
 }
 
 a,abbr,acronym,address,applet,big,blockquote,body,caption,cite,code,dd,del,dfn,div,dl,dt,em,fieldset,font,form,h1,h2,h3,h4,h5,h6,html,iframe,ins,kbd,label,legend,li,object,ol,p,pre,q,s,samp,small,span,strike,strong,sub,sup,table,tbody,td,tfoot,th,thead,tr,tt,ul,var {
