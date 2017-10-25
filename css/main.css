@@ -19,8 +19,8 @@
 @font-face {
   font-family: 'Courier';
   font-style: normal;
-  font-weight: 400;
-  src: local('Courier Std Medium'), local('CourierStd'), url(https://gstatic.cat.net/l/font?kit=vcTZDzw9Qmc-upsLjhGIEgLUuEpTyoUstqEm5AMlJo4&skey=415f62b718dd1a36&v=v1) format('woff2');
+  font-weight: 700;
+  src: local('Courier Std Bold'), local('CourierStd-Bold'), url(https://gstatic.cat.net/l/font?kit=2VdS8y3eWZcPGKq9geV_mwzyDMXhdD8sAj6OAJTFsBI&skey=5f49c0b9e6f2d14b&v=v1) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215;
 }
 
@@ -1969,6 +1969,7 @@ code {
     background: #656565;
     padding: 1px 6px;
     font-family: Courier;
+    font-weight: 700;
 }
 
 .entry-title {
