@@ -16,14 +16,6 @@
     url(//cdn.jsdelivr.net/gh/tingwork/it68pages@1.17/font/it68icon.svg#it68icon) format('svg')
 }
 
-@font-face {
-  font-family: 'Courier';
-  font-style: normal;
-  font-weight: 700;
-  src: local('Courier Std Bold'), local('CourierStd-Bold'), url(https://gstatic.cat.net/l/font?kit=2VdS8y3eWZcPGKq9geV_mwzyDMXhdD8sAj6OAJTFsBI&skey=5f49c0b9e6f2d14b&v=v1) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215;
-}
-
 a,abbr,acronym,address,applet,big,blockquote,body,caption,cite,code,dd,del,dfn,div,dl,dt,em,fieldset,font,form,h1,h2,h3,h4,h5,h6,html,iframe,ins,kbd,label,legend,li,object,ol,p,pre,q,s,samp,small,span,strike,strong,sub,sup,table,tbody,td,tfoot,th,thead,tr,tt,ul,var {
     border: 0;
     font-family: inherit;
