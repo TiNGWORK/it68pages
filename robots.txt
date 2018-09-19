@@ -1,0 +1,13 @@
+User-agent: *
+
+Allow: /
+Allow: /archives/ 
+
+Disallow: /js/
+Disallow: /css/
+Disallow: /fonts/
+Disallow: /vendors/
+Disallow: /fancybox/
+
+Sitemap: https://www.it68.com.cn/sitemap.xml
+Sitemap: https://www.it68.com.cn/baidusitemap.xml
