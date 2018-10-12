@@ -42,24 +42,6 @@
 
     
   <url>
-    <loc>https://www.it68.com.cn/2015/08/04/the-story-about-weakness/</loc>
-    <lastmod>2018-09-19T02:55:49.233Z</lastmod>
-    <data>
-        <display>
-        <title>弱者与强者的故事</title>
-        <pubTime>2015-08-03T21:51:42.000Z</pubTime>
-        
-         
-           
-             
-              <breadCrumb title="生活笔记" url="https://www.it68.com.cn/categories/daily/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://www.it68.com.cn/2015/07/22/the-difference-between-pdo-bindvalue-and-bindparam/</loc>
     <lastmod>2018-09-19T02:55:49.233Z</lastmod>
     <data>
@@ -78,12 +60,12 @@
 
     
   <url>
-    <loc>https://www.it68.com.cn/2015/08/11/selina-kyle-in-the-dark-knight-rises/</loc>
+    <loc>https://www.it68.com.cn/2015/08/04/the-story-about-weakness/</loc>
     <lastmod>2018-09-19T02:55:49.233Z</lastmod>
     <data>
         <display>
-        <title>回顾《暗夜骑士崛起》有感</title>
-        <pubTime>2015-08-11T03:22:33.000Z</pubTime>
+        <title>弱者与强者的故事</title>
+        <pubTime>2015-08-03T21:51:42.000Z</pubTime>
         
          
            
@@ -96,17 +78,17 @@
 
     
   <url>
-    <loc>https://www.it68.com.cn/2015/08/06/nginx-ssl-sha256-support-xp-ie-and-ie7/</loc>
-    <lastmod>2018-09-19T02:55:49.232Z</lastmod>
+    <loc>https://www.it68.com.cn/2015/08/11/selina-kyle-in-the-dark-knight-rises/</loc>
+    <lastmod>2018-09-19T02:55:49.233Z</lastmod>
     <data>
         <display>
-        <title>NGINX简单配置 让SHA256证书支持XP SP1/SP2</title>
-        <pubTime>2015-08-06T07:53:31.000Z</pubTime>
+        <title>回顾《暗夜骑士崛起》有感</title>
+        <pubTime>2015-08-11T03:22:33.000Z</pubTime>
         
          
            
              
-              <breadCrumb title="技术文章" url="https://www.it68.com.cn/categories/tech/"/>
+              <breadCrumb title="生活笔记" url="https://www.it68.com.cn/categories/daily/"/>
           
         </display>
     </data>
@@ -153,6 +135,24 @@
 
     
   <url>
+    <loc>https://www.it68.com.cn/2015/08/06/nginx-ssl-sha256-support-xp-ie-and-ie7/</loc>
+    <lastmod>2018-09-19T02:55:49.232Z</lastmod>
+    <data>
+        <display>
+        <title>NGINX简单配置 让SHA256证书支持XP SP1/SP2</title>
+        <pubTime>2015-08-06T07:53:31.000Z</pubTime>
+        
+         
+           
+             
+              <breadCrumb title="技术文章" url="https://www.it68.com.cn/categories/tech/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>https://www.it68.com.cn/2016/06/09/nights-watch-a-automatic-web-application-security-scanner/</loc>
     <lastmod>2018-09-19T02:55:49.232Z</lastmod>
     <data>
@@ -164,6 +164,24 @@
            
              
               <breadCrumb title="技术文章" url="https://www.it68.com.cn/categories/tech/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://www.it68.com.cn/2015/05/03/it68-new-ui-rebuild-and-move-to-tumblr/</loc>
+    <lastmod>2018-09-19T02:55:49.231Z</lastmod>
+    <data>
+        <display>
+        <title>IT乐吧使用全新UI 迁博至tumblr</title>
+        <pubTime>2015-05-03T07:19:47.000Z</pubTime>
+        
+         
+           
+             
+              <breadCrumb title="网站公告" url="https://www.it68.com.cn/categories/site-anounce/"/>
           
         </display>
     </data>
@@ -200,24 +218,6 @@
            
              
               <breadCrumb title="技术文章" url="https://www.it68.com.cn/categories/tech/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://www.it68.com.cn/2015/05/03/it68-new-ui-rebuild-and-move-to-tumblr/</loc>
-    <lastmod>2018-09-19T02:55:49.231Z</lastmod>
-    <data>
-        <display>
-        <title>IT乐吧使用全新UI 迁博至tumblr</title>
-        <pubTime>2015-05-03T07:19:47.000Z</pubTime>
-        
-         
-           
-             
-              <breadCrumb title="网站公告" url="https://www.it68.com.cn/categories/site-anounce/"/>
           
         </display>
     </data>
