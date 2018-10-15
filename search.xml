@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search> 
+  
+    
+    <entry>
+      <title><![CDATA[不用三方包 给Laravel开启Swoole]]></title>
+      <url>/2018/09/19/make-swoolefy-laravel-without-packges/</url>
+      <content type="html"><![CDATA[<p><a href="https://swoole.com" target="_blank" rel="noopener">Swoole</a> 是一款优秀的 PHP 扩展，利用其可以实现原生 PHP 很难做到的常驻服务和异步。正好我有个 Laravel 项目可以折腾，就研究了下。</p>
+<p>Laravel 项目是基于 composer 的，所以我先帖下我的 <code>composer.json</code> 中的 require 声明：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"require"</span>: &#123;</span><br><span class="line">        <span class="attr">"php"</span>: <span class="string">"^7.1.3"</span>,</span><br><span class="line">        <span class="attr">"cybercog/laravel-love"</span>: <span class="string">"^5.1"</span>,</span><br><span class="line">        <span class="attr">"dingo/api"</span>: <span class="string">"~v2.0.0-alpha2"</span>,</span><br><span class="line">        <span class="attr">"doctrine/dbal"</span>: <span class="string">"^2.8"</span>,</span><br><span class="line">        <span class="attr">"fideloper/proxy"</span>: <span class="string">"^4.0"</span>,</span><br><span class="line">        <span class="attr">"guzzlehttp/guzzle"</span>: <span class="string">"^6.3"</span>,</span><br><span class="line">        <span class="attr">"infyomlabs/adminlte-templates"</span>: <span class="string">"5.6.x-dev"</span>,</span><br><span class="line">        <span class="attr">"infyomlabs/laravel-generator"</span>: <span class="string">"5.6.x-dev"</span>,</span><br><span class="line">        <span class="attr">"jeroennoten/laravel-adminlte"</span>: <span class="string">"^1.23"</span>,</span><br><span class="line">        <span class="attr">"laravel/framework"</span>: <span class="string">"5.6.*"</span>,</span><br><span class="line">        <span class="attr">"laravel/tinker"</span>: <span class="string">"^1.0"</span>,</span><br><span class="line">        <span class="attr">"laravelcollective/html"</span>: <span class="string">"^5.6.0"</span>,</span><br><span class="line">        <span class="attr">"lshorz/luocaptcha"</span>: <span class="string">"^1.0"</span>,</span><br><span class="line">        <span class="attr">"overtrue/laravel-lang"</span>: <span class="string">"v3.0.08"</span>,</span><br><span class="line">        <span class="attr">"overtrue/laravel-wechat"</span>: <span class="string">"^4.0"</span>,</span><br><span class="line">        <span class="attr">"predis/predis"</span>: <span class="string">"^1.1"</span>,</span><br><span class="line">        <span class="attr">"spatie/laravel-permission"</span>: <span class="string">"^2.17"</span>,</span><br><span class="line">        <span class="attr">"tymon/jwt-auth"</span>: <span class="string">"~1.0.0-rc.2"</span>,</span><br><span class="line">        <span class="attr">"yajra/laravel-datatables-buttons"</span>: <span class="string">"^4.0"</span>,</span><br><span class="line">        <span class="attr">"yajra/laravel-datatables-oracle"</span>: <span class="string">"^8.7"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果我们要开启swoole，我们可选的包有这些：</p>
+<ul>
+<li><a href="https://github.com/swooletw/laravel-swoole" target="_blank" rel="noopener">swooletw/laravel-swoole</a></li>
+<li><a href="https://github.com/hhxsv5/laravel-s" target="_blank" rel="noopener">hhxsv5/laravel-s</a></li>
+</ul>
+<p>但一般来说，项目中需要常驻容器的服务与每次均需重新构建的服务并不一样，所以我才剑走偏锋。</p>
+<h4 id="起步"><a href="#起步" class="headerlink" title="起步"></a>起步</h4><p>我们需要将 <code>public/index.php</code> 替换成如下<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Http</span>\<span class="title">Request</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Http</span>\<span class="title">Response</span>;</span><br><span class="line"></span><br><span class="line">define(<span class="string">'LARAVEL_START'</span>, microtime(<span class="keyword">true</span>));</span><br><span class="line"><span class="keyword">require</span> <span class="keyword">__DIR__</span> . <span class="string">'/../vendor/autoload.php'</span>;</span><br><span class="line">$app = <span class="keyword">require_once</span> <span class="keyword">__DIR__</span> . <span class="string">'/../bootstrap/app.php'</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Laravel</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Illuminate\Foundation\Application</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> \Illuminate\Foundation\Application</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> $app;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * App\Http\Kernel</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> \App\Http\Kernel</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> $kernel;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * App\Http\Requests\Request</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> \App\Http\Requests\Request</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> $request;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Illuminate\Http\JsonResponse</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> \Illuminate\Http\JsonResponse</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> $response;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 构造</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> \Illuminate\Foundation\Application $app</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">(\Illuminate\Foundation\Application $app)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;app = $app;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * RUN</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        \Swoole\Runtime::enableCoroutine(<span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">        $http = <span class="keyword">new</span> swoole_http_server(<span class="string">'127.0.0.1'</span>, <span class="string">'80'</span>);</span><br><span class="line"></span><br><span class="line">        $http-&gt;set([</span><br><span class="line">            <span class="string">'document_root'</span> =&gt; public_path(<span class="string">'/'</span>),</span><br><span class="line">            <span class="string">'enable_static_handler'</span> =&gt; <span class="keyword">true</span>,</span><br><span class="line">        ]);</span><br><span class="line"></span><br><span class="line">        $http-&gt;on(<span class="string">'request'</span>, <span class="function"><span class="keyword">function</span> <span class="params">($req, $res)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                $kernel = <span class="keyword">$this</span>-&gt;app-&gt;make(Illuminate\Contracts\Http\Kernel::class);</span><br><span class="line"></span><br><span class="line">                $get = $req-&gt;get ?? [];</span><br><span class="line">                $post = $req-&gt;post ?? [];</span><br><span class="line">                $input = array_merge($get, $post);</span><br><span class="line">                $cookie = $req-&gt;cookie ?? [];</span><br><span class="line">                $files = $req-&gt;files ?? [];</span><br><span class="line">                $server = $req-&gt;server ?? [];</span><br><span class="line"></span><br><span class="line">                $request = Request::create($req-&gt;server[<span class="string">'request_uri'</span>], $req-&gt;server[<span class="string">'request_method'</span>], $input, $cookie, $files, $server);</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">isset</span>($req-&gt;header[<span class="string">'x-requested-with'</span>]) &amp;&amp; $req-&gt;header[<span class="string">'x-requested-with'</span>] == <span class="string">"XMLHttpRequest"</span>) &#123;</span><br><span class="line">                    $request-&gt;headers-&gt;set(<span class="string">'X-Requested-With'</span>, <span class="string">"XMLHttpRequest"</span>, <span class="keyword">true</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">isset</span>($req-&gt;header[<span class="string">'accept'</span>]) &amp;&amp; $req-&gt;header[<span class="string">'accept'</span>]) &#123;</span><br><span class="line">                    $request-&gt;headers-&gt;set(<span class="string">'Accept'</span>, $req-&gt;header[<span class="string">'accept'</span>], <span class="keyword">true</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                $response = $kernel-&gt;handle($request);</span><br><span class="line"></span><br><span class="line">                $res-&gt;status($response-&gt;getStatusCode());</span><br><span class="line"></span><br><span class="line">                <span class="keyword">foreach</span> ($response-&gt;headers-&gt;allPreserveCaseWithoutCookies() <span class="keyword">as</span> $name =&gt; $values) &#123;</span><br><span class="line">                    <span class="keyword">foreach</span> ($values <span class="keyword">as</span> $value) &#123;</span><br><span class="line">                        $res-&gt;header($name, $value, <span class="keyword">false</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">foreach</span> ($response-&gt;headers-&gt;getCookies() <span class="keyword">as</span> $cookie) &#123;</span><br><span class="line">                    $res-&gt;header(<span class="string">'Set-Cookie'</span>, $cookie-&gt;getName() . strstr($cookie, <span class="string">'='</span>), <span class="keyword">false</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                dump(time());</span><br><span class="line"></span><br><span class="line">                $res-&gt;end($response-&gt;getContent());</span><br><span class="line">                <span class="keyword">$this</span>-&gt;app-&gt;forgetInstance(<span class="string">'request'</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (\throwable $e) &#123;</span><br><span class="line">                <span class="keyword">echo</span> $e-&gt;getMessage();</span><br><span class="line">                <span class="keyword">echo</span> PHP_EOL;</span><br><span class="line">                <span class="keyword">echo</span> $e-&gt;getFile();</span><br><span class="line">                <span class="keyword">echo</span> PHP_EOL;</span><br><span class="line">                <span class="keyword">echo</span> $e-&gt;getLine();</span><br><span class="line">                <span class="keyword">echo</span> PHP_EOL;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        $http-&gt;start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">(<span class="keyword">new</span> Laravel($app))-&gt;run();</span><br></pre></td></tr></table></figure></p>
+<p>运行时发现大多数页面均没有问题，只有几个用了 <code>infyomlabs/laravel-generator</code> 产生的列表页，AJAX拉取JSON时却返回了HTML。</p>
+<hr>
+<h4 id="排查"><a href="#排查" class="headerlink" title="排查"></a>排查</h4><p>在有问题页面的 controller 代码中，找到如下<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Display a listing of the Star.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> StarDataTable $starDataTable</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> Response</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">(StarDataTable $starDataTable)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> $starDataTable-&gt;render(<span class="string">'stars.index'</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>定位 <code>StarDataTable::render()</code> 到了<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Process dataTables needed render output.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> string $view</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> array $data</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> array $mergeData</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> mixed</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">render</span><span class="params">($view, $data = [], $mergeData = [])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;request()-&gt;ajax() &amp;&amp; <span class="keyword">$this</span>-&gt;request()-&gt;wantsJson()) &#123;</span><br><span class="line">        <span class="keyword">return</span> app()-&gt;call([<span class="keyword">$this</span>, <span class="string">'ajax'</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这是判断 <code>$this-&gt;request()</code> 是不是 XHR 请求，且 <code>Accept</code> 请求头声明了 <code>application/json</code></p>
+<p>而 <code>$this-&gt;request()</code> 实现如下<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Get DataTables Request instance.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> \Yajra\DataTables\Utilities\Request</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">request</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;request ?: <span class="keyword">$this</span>-&gt;request = resolve(<span class="string">'datatables.request'</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>不难看出，如果第一次构建，会走到<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">$this</span>-&gt;request = resolve(<span class="string">'datatables.request'</span>);</span><br></pre></td></tr></table></figure></p>
+<p>而 resolve 的实现是啥？<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (! function_exists(<span class="string">'resolve'</span>)) &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Resolve a service from the container.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span>  string  $name</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> mixed</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">resolve</span><span class="params">($name)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> app($name);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>就是从容器中取出 <code>datatables.request</code> 的过程。</p>
+<p>所以我们只需让每次请求结束，$app 容器忘掉 <code>datatables.request</code> 就好了</p>
+<hr>
+<h4 id="改进"><a href="#改进" class="headerlink" title="改进"></a>改进</h4><p>增加遗忘 <code>datatables.request</code><br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$res-&gt;end($response-&gt;getContent());</span><br><span class="line"><span class="keyword">$this</span>-&gt;app-&gt;forgetInstance(<span class="string">'request'</span>);</span><br><span class="line"><span class="keyword">$this</span>-&gt;app-&gt;forgetInstance(<span class="string">'datatables.request'</span>);</span><br><span class="line"><span class="keyword">$this</span>-&gt;app-&gt;forgetInstance(\Dingo\Api\Http\Middleware\Request::class);</span><br></pre></td></tr></table></figure></p>
+<p>完整最终版：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Http</span>\<span class="title">Request</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Http</span>\<span class="title">Response</span>;</span><br><span class="line"></span><br><span class="line">define(<span class="string">'LARAVEL_START'</span>, microtime(<span class="keyword">true</span>));</span><br><span class="line"><span class="keyword">require</span> <span class="keyword">__DIR__</span> . <span class="string">'/../vendor/autoload.php'</span>;</span><br><span class="line">$app = <span class="keyword">require_once</span> <span class="keyword">__DIR__</span> . <span class="string">'/../bootstrap/app.php'</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Laravel</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Illuminate\Foundation\Application</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> \Illuminate\Foundation\Application</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> $app;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * App\Http\Kernel</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> \App\Http\Kernel</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> $kernel;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * App\Http\Requests\Request</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> \App\Http\Requests\Request</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> $request;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Illuminate\Http\JsonResponse</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@var</span> \Illuminate\Http\JsonResponse</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> $response;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 构造</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> \Illuminate\Foundation\Application $app</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">(\Illuminate\Foundation\Application $app)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;app = $app;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * RUN</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        \Swoole\Runtime::enableCoroutine(<span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">        $http = <span class="keyword">new</span> swoole_http_server(<span class="string">'127.0.0.1'</span>, <span class="string">'80'</span>);</span><br><span class="line"></span><br><span class="line">        $http-&gt;set([</span><br><span class="line">            <span class="string">'document_root'</span> =&gt; public_path(<span class="string">'/'</span>),</span><br><span class="line">            <span class="string">'enable_static_handler'</span> =&gt; <span class="keyword">true</span>,</span><br><span class="line">        ]);</span><br><span class="line"></span><br><span class="line">        $http-&gt;on(<span class="string">'request'</span>, <span class="function"><span class="keyword">function</span> <span class="params">($req, $res)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                $kernel = <span class="keyword">$this</span>-&gt;app-&gt;make(Illuminate\Contracts\Http\Kernel::class);</span><br><span class="line"></span><br><span class="line">                $get = $req-&gt;get ?? [];</span><br><span class="line">                $post = $req-&gt;post ?? [];</span><br><span class="line">                $input = array_merge($get, $post);</span><br><span class="line">                $cookie = $req-&gt;cookie ?? [];</span><br><span class="line">                $files = $req-&gt;files ?? [];</span><br><span class="line">                $server = $req-&gt;server ?? [];</span><br><span class="line"></span><br><span class="line">                $request = Request::create($req-&gt;server[<span class="string">'request_uri'</span>], $req-&gt;server[<span class="string">'request_method'</span>], $input, $cookie, $files, $server);</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">isset</span>($req-&gt;header[<span class="string">'x-requested-with'</span>]) &amp;&amp; $req-&gt;header[<span class="string">'x-requested-with'</span>] == <span class="string">"XMLHttpRequest"</span>) &#123;</span><br><span class="line">                    $request-&gt;headers-&gt;set(<span class="string">'X-Requested-With'</span>, <span class="string">"XMLHttpRequest"</span>, <span class="keyword">true</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">isset</span>($req-&gt;header[<span class="string">'accept'</span>]) &amp;&amp; $req-&gt;header[<span class="string">'accept'</span>]) &#123;</span><br><span class="line">                    $request-&gt;headers-&gt;set(<span class="string">'Accept'</span>, $req-&gt;header[<span class="string">'accept'</span>], <span class="keyword">true</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                $response = $kernel-&gt;handle($request);</span><br><span class="line"></span><br><span class="line">                $res-&gt;status($response-&gt;getStatusCode());</span><br><span class="line"></span><br><span class="line">                <span class="keyword">foreach</span> ($response-&gt;headers-&gt;allPreserveCaseWithoutCookies() <span class="keyword">as</span> $name =&gt; $values) &#123;</span><br><span class="line">                    <span class="keyword">foreach</span> ($values <span class="keyword">as</span> $value) &#123;</span><br><span class="line">                        $res-&gt;header($name, $value, <span class="keyword">false</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">foreach</span> ($response-&gt;headers-&gt;getCookies() <span class="keyword">as</span> $cookie) &#123;</span><br><span class="line">                    $res-&gt;header(<span class="string">'Set-Cookie'</span>, $cookie-&gt;getName() . strstr($cookie, <span class="string">'='</span>), <span class="keyword">false</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                dump(time());</span><br><span class="line"></span><br><span class="line">                $res-&gt;end($response-&gt;getContent());</span><br><span class="line">                <span class="keyword">$this</span>-&gt;app-&gt;forgetInstance(<span class="string">'request'</span>);</span><br><span class="line">                <span class="comment">//$this-&gt;app-&gt;forgetInstance('session');</span></span><br><span class="line">                <span class="comment">//$this-&gt;app-&gt;forgetInstance('session.store');</span></span><br><span class="line">                <span class="comment">//$this-&gt;app-&gt;forgetInstance('cookie');</span></span><br><span class="line">                <span class="keyword">$this</span>-&gt;app-&gt;forgetInstance(<span class="string">'datatables.request'</span>);</span><br><span class="line">                <span class="keyword">$this</span>-&gt;app-&gt;forgetInstance(\Dingo\Api\Http\Middleware\Request::class);</span><br><span class="line">                <span class="comment">//$kernel-&gt;terminate($request, $response);</span></span><br><span class="line">            &#125; <span class="keyword">catch</span> (\throwable $e) &#123;</span><br><span class="line">                <span class="keyword">echo</span> $e-&gt;getMessage();</span><br><span class="line">                <span class="keyword">echo</span> PHP_EOL;</span><br><span class="line">                <span class="keyword">echo</span> $e-&gt;getFile();</span><br><span class="line">                <span class="keyword">echo</span> PHP_EOL;</span><br><span class="line">                <span class="keyword">echo</span> $e-&gt;getLine();</span><br><span class="line">                <span class="keyword">echo</span> PHP_EOL;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        $http-&gt;start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">(<span class="keyword">new</span> Laravel($app))-&gt;run();</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><p>比原生 laravel 确实快不少（这还有4句SQL查询）</p>
+<p><img src="https://img.alicdn.com/imgextra/i3/665032476/O1CN011UA37OSPzKzZdGW_!!665032476.png" alt="测试截图"></p>
+<hr>
+<ul>
+<li>注，此处给出的代码可以借鉴，但未经长期验证。且不同项目实际用到的包不同，需要在调试过程中 <code>debug</code> 容器中的服务提供者，和追踪代码来调优。</li>
+</ul>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[把你的 Sublime Text 3 打造成 PHP 的 IDE]]></title>
+      <url>/2017/10/14/make-your-sublime-php-ide/</url>
+      <content type="html"><![CDATA[<p>一直以来，Sublime Text均只是作为一款编辑器，而非IDE（集成开发环境）。包括俺开发PHP时候，Sublime Text包管理中也很难找到支持真正意义上的PHP集成（包括定义位置跳转、自动补全两个基本功能）。</p>
+<p>在不久前微软VSCode（Visiual Studio Code）团队向社会输出了他们的Language Server ( <a href="https://langserver.org/" target="_blank" rel="noopener">https://langserver.org/</a> )Protocol协议，将市面上五花八门各种编辑器IDE的补全实现标准化。包括 Code completion、Hover、Jump to def、Find references、Symbol search 和 Diagnostics 等功能的规范化。</p>
+<p>按照Langserver.org 官网的介绍，就是以前，每个编辑器，需要针对单独每种开发语言进行适配的插件，进行拆分，由社区产出了 语言侧(Language Server) 和 编辑器侧(Language Client)， Aka， LSP的两部分</p>
+<ul>
+<li>Language Server</li>
+<li>Language Client </li>
+</ul>
+<p>Language Server是启动的Demon（走协议）或Cli（标准输出stdout）通信的服务， Language Client向其发出请求， Language Server按照约定响应Client需要的数据，最后再由Client实现对编辑器插件指令的转换，实现IDE补全、跳转等功能。</p>
+<p>Sublime Text的插件由这两个Github仓库组成:</p>
+<ul>
+<li><a href="https://github.com/tomv564/LSP" target="_blank" rel="noopener">https://github.com/tomv564/LSP</a></li>
+<li><a href="https://github.com/felixfbecker/php-language-server" target="_blank" rel="noopener">https://github.com/felixfbecker/php-language-server</a></li>
+</ul>
+<p>安装方法:</p>
+<ul>
+<li>将你 <code>composer.json</code> 的 “minimum-stability” 设置成 “dev”（一定要做这一步，因为composer默认的 minimum-stability 不是dev）</li>
+<li>composer require felixfbecker/php-language-server</li>
+<li>Sublime Text &gt; Package Controller &gt; Install &gt; LSP 关键字 &gt; 安装</li>
+<li>修改LSP的PHP补全为如下: </li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="attr">"clients"</span>: &#123;</span><br><span class="line">		<span class="attr">"phpls"</span>: &#123;</span><br><span class="line">			<span class="attr">"command"</span>: [</span><br><span class="line">				<span class="string">"path/to/bin/php"</span>,</span><br><span class="line">				<span class="string">"path/to/project/vendor/felixfbecker/language-server/bin/php-language-server.php"</span></span><br><span class="line">			],</span><br><span class="line">			<span class="attr">"enabled"</span>: <span class="literal">true</span>,</span><br><span class="line">			<span class="attr">"env"</span>: &#123;&#125;,</span><br><span class="line">			<span class="attr">"initializationOptions"</span>: &#123;&#125;,</span><br><span class="line">			<span class="attr">"languageId"</span>: <span class="string">"php"</span>,</span><br><span class="line">		        <span class="attr">"scopes"</span>: [<span class="string">"source.php"</span>, <span class="string">"embedding.php"</span>],</span><br><span class="line">			<span class="attr">"settings"</span>: &#123;&#125;,</span><br><span class="line">			<span class="attr">"syntaxes"</span>: [</span><br><span class="line">				<span class="string">"Packages/PHP/PHP.sublime-syntax"</span></span><br><span class="line">			]</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用方法:</p>
+<ul>
+<li>跳转定义: alt+ctrl</li>
+<li>自动补全: <code>-&gt;</code>、<code>::</code>、<code>$</code></li>
+</ul>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[使用hexo碰到的一个图片坑]]></title>
+      <url>/2017/10/08/markdown-translated-to-html-responsive-image/</url>
+      <content type="html"><![CDATA[<p>如果用过 hexo, 你应该知道 hexo 是使用 markdown 书写文章的.<br>这几天我闲的慌把我博客换成了 hexo 然后就碰到了一个问题.<br>以前我用 Ghost 时候写文章很多内容的图片, 都是两倍图的.<br>但是转成 markdown 后, 全部用<code>![title](image)</code>语法来插图, 不再是 html.<br>就导致我的文章中的两倍图无法渲染成 srcset.</p>
+<p>迫于无奈, 我妥协了, 使用了这个 trick</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.entry-content</span> <span class="selector-tag">img</span>&#123;</span><br><span class="line">    <span class="attribute">zoom</span>: <span class="number">0.5</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后以后写文章我只传两倍图, 保证像素不渣.</p>
+<p>哦, 忘了说. 我从 ghost 换到 hexo 了.<br>不过也没关系, 反正我博客也没什么人.<br>因为disqus被墙, 我等有空再想办法基于API写个disqus程序来展示和发表评论. 暂时没时间移植过来了.</p>
+<hr>
+<h4 id="用hexo碰到的坑"><a href="#用hexo碰到的坑" class="headerlink" title="用hexo碰到的坑"></a>用hexo碰到的坑</h4><ul>
+<li>当分类为中文时候, 如果没在 category_map 声明定义, 将会在很多主题中无法正常展示列表和详情.</li>
+<li>markdown图片不支持响应式加载两倍图.</li>
+</ul>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[Night's watch -- 自动漏洞扫描工具]]></title>
+      <url>/2016/06/09/nights-watch-a-automatic-web-application-security-scanner/</url>
+      <content type="html"><![CDATA[<h4 id="功能介绍"><a href="#功能介绍" class="headerlink" title="功能介绍"></a>功能介绍</h4><p>Night’s watch是一款自动化漏洞检测工具, 旨在为安全从业人员做基础重复的请求和判断的工作量, 为安全从业人员节省时间.<br>下面有个演示视频.</p>
+<video style="max-width: 100%; max-height: 100%; display: inline-block; margin-top: 10px;" controls src="//it68-file-alimmdn-com.alikunlun.com/233sec%27s+nights+watch.mov">您的浏览器不支持播放视频</video>
+
+<h4 id="功能截图"><a href="#功能截图" class="headerlink" title="功能截图"></a>功能截图</h4><p><img src="https://img.alicdn.com/tfscom/TB1W2N7KpXXXXchXVXXXXXXXXXX.png" alt="1"></p>
+<p><img src="https://img.alicdn.com/tfscom/TB11syfKpXXXXanXFXXXXXXXXXX.png" alt="2"></p>
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><p>目前仅限内测下载.</p>
+<p>要求: 浏览器Chrome 45+, 系统 Windows 7+/Mac OS X 10.9+</p>
+<p>安装地址: <a href="https://chrome.google.com/webstore/detail/nights-watch/bojdnhknmbpighaoaepfjpnknaafldhj" target="_blank" rel="noopener">https://chrome.google.com/webstore/detail/nights-watch/bojdnhknmbpighaoaepfjpnknaafldhj</a></p>
+<p>如果您有兴趣, 请在下面留言, 说明您工作的公司/职位/安全从业经验及年限, 我们的 MM 运营会审核限量发放内测邀请.</p>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[随机算法在APP安全中的重要性]]></title>
+      <url>/2016/05/25/how-important-the-random-algorithm-is/</url>
+      <content type="html"><![CDATA[<p>在展开文章之前，先给大家看一段代码:</p>
+<h5 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h5><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="comment">// 登录</span></span><br><span class="line">$uid = $_POST[<span class="string">'uid'</span>];</span><br><span class="line">$token = time() . rand(<span class="number">1000</span>, <span class="number">9999</span>);</span><br><span class="line">$token = md5($token);</span><br><span class="line">$redis = <span class="keyword">new</span> Redis();</span><br><span class="line">$do = $redis -&gt;setnx(<span class="string">'Auth:'</span> . $token, $uid);</span><br><span class="line"><span class="keyword">if</span>( !$do )  </span><br><span class="line">    $app-&gt;response(<span class="string">"Sorry, server is busy..."</span>);</span><br><span class="line">$app-&gt;response(<span class="string">"Hello, "</span>.$uid.<span class="string">"'s auth token is "</span>.$token);</span><br></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="comment">// 验证凭具</span></span><br><span class="line">$token = $_POST[<span class="string">'token'</span>];</span><br><span class="line">$redis = <span class="keyword">new</span> Redis();</span><br><span class="line">$uid = $redis -&gt;get(<span class="string">'Auth:'</span> . $token);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"Hello, You are logged in as "</span>.$uid;</span><br></pre></td></tr></table></figure>
+<h5 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h5><p>上述代码, 逻辑上并无太大问题，一般业务一秒钟能登录超过8999个用户的可能性也不太大，所以基本上能满足大多业务的APP授权需求。</p>
+<p>可是这块代码真没有安全问题吗？</p>
+<p>有。</p>
+<p>随机生成算法太弱。</p>
+<p>假设小明同学在1464158564这个时间点登录了应用，那么 md5( “1464158564” . rand( 1000, 9999 ) ) 中，除去了时间戳外就只有1000～9999是破解的变量了。只需猜8999次即可获取小明的账户权限。</p>
+<h5 id="改进建议"><a href="#改进建议" class="headerlink" title="改进建议"></a>改进建议</h5><p>首先将随机因子加多，头部加尾变也加，然后长度远远大于可猜解的范围，加大暴力破解难度。</p>
+<p>哈希算法改成非哈希算法，比如php的password_hash()函数替代md5()，相同因子不同次生成的密文不一致，即可以一定程度避免重复，也能无限维度加大破解难度。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="comment">// 登录</span></span><br><span class="line">$uid = $_POST[<span class="string">'uid'</span>];</span><br><span class="line">$token = rand(<span class="number">10000000</span>, <span class="number">99999999</span>) . time() . rand(<span class="number">10000000</span>, <span class="number">99999999</span>);</span><br><span class="line">$token = password_hash($token, <span class="number">1</span>);</span><br><span class="line">$redis = <span class="keyword">new</span> Redis();</span><br><span class="line">$do = $redis -&gt;setnx(<span class="string">'Auth:'</span> . $token, $uid);</span><br><span class="line"><span class="keyword">if</span>( !$do )  </span><br><span class="line">    $app-&gt;response(<span class="string">"Sorry, server is busy..."</span>);</span><br><span class="line">$app-&gt;response(<span class="string">"Hello, "</span>.$uid.<span class="string">"'s auth token is "</span>.$token);</span><br></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line"><span class="comment">// 验证凭具</span></span><br><span class="line">$token = $_POST[<span class="string">'token'</span>];</span><br><span class="line">$redis = <span class="keyword">new</span> Redis();</span><br><span class="line">$uid = $redis -&gt;get(<span class="string">'Auth:'</span> . $token);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"Hello, You are logged in as "</span>.$uid;</span><br></pre></td></tr></table></figure>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[谷歌搜索免翻墙版：gg.gg/sou]]></title>
+      <url>/2016/02/02/google-search-in-china-gg-gg-sou/</url>
+      <content type="html"><![CDATA[<p>在前家公司工作时，由于同事和很多朋友需要，我做了一个不翻墙搜索谷歌的工具，其实早上线了，但是由于没时间写文章所以没对外公布，今天才来给大家介绍下….</p>
+<p>地址: <a href="https://www.it68.com.cn/file/google/">https://www.it68.com.cn/file/google/</a> 短链接便于记忆: : gg.gg/sou</p>
+<p><img src="https://img.alicdn.com/tfscom/TB1k_4oLFXXXXclXVXXXXXXXXXX.png" alt="1"></p>
+<p><img src="https://img.alicdn.com/tfscom/TB1nJ0GLFXXXXczXpXXXXXXXXXX.png" alt="2"></p>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[[Mac福利]Google.alfredworkflow免翻墙版]]></title>
+      <url>/2015/08/22/google-search-tool-without-f4ck-wall/</url>
+      <content type="html"><![CDATA[<p>在最近, shadowsocks作者被请喝茶, 源码已被和谐, 相信不久之后shadowsocks的翻墙能力将不及以前. 而我们翻墙不为上草榴, 不为看轮子, 只为了安静地Google搜索下stackoverflow上的技术问题….</p>
+<p>我党逼我们上了绝路, 万般无奈之下, 研发出此神器.</p>
+<p><img src="https://img.alicdn.com/tfscom/TB16h7nJXXXXXawXXXXXXXXXXXX.png" alt="1"></p>
+<p><img src="https://img.alicdn.com/tfscom/TB1ER_UJXXXXXbPapXXXXXXXXXX.png" alt="2"></p>
+<p>下载地址<br><a href="http://t.cn/RLF5eHE" target="_blank" rel="noopener">下载</a></p>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[[Mac福利]拉勾网AlfredWorkflow]]></title>
+      <url>/2015/08/19/la-gou-wang-alfredworkflow/</url>
+      <content type="html"><![CDATA[<p>拉勾网是国内专业的互联网领域招聘平台，专注于为互联网从业者提供更好的职业机会。<br>比“智联”/“51job”传统招聘网站体验更进一步，偷偷告诉你们，我的工作一直都是在拉勾网找的。<br>这次做的Workflow，实现了以下功能:</p>
+<h4 id="1-lagou-职位-薪资范围-地市"><a href="#1-lagou-职位-薪资范围-地市" class="headerlink" title="1. lagou 职位 薪资范围 地市"></a>1. lagou 职位 薪资范围 地市</h4><p>如“lagou PHP 25k-30k 上海”<br><img src="https://img.alicdn.com/tfscom/TB1IBCLJXXXXXcOXFXXXXXXXXXX.png" alt="1"></p>
+<h4 id="2-lagou-关键字"><a href="#2-lagou-关键字" class="headerlink" title="2. lagou 关键字"></a>2. lagou 关键字</h4><p>如“lagou PHP腾讯”<br><img src="https://img.alicdn.com/tfscom/TB1oJCLJXXXXXXLXVXXXXXXXXXX.png" alt="2"></p>
+<h4 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址:"></a>下载地址:</h4><p><a href="http://t.cn/RLecAyy" target="_blank" rel="noopener">下载</a></p>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[浅析云计算巨头 阿里云]]></title>
+      <url>/2015/08/14/how-aliyun-become-cloud-computing-winner-in-china/</url>
+      <content type="html"><![CDATA[<p>阿里云, 09年最初成立叫做“阿里巴巴云计算”, 由王坚博士主导从底层研发的大规模云计算平台“飞天”及上层IaaS+PaaS服务构成.</p>
+<p>早年….<br>盛大云的“背包兔事件” 公关失败, “云计算”的概念在国内就是个笑话.<br>而阿里云基本未发生非客户原因导致数据丢失的事情, 这是因为阿里云从诞生之日, 基础已牢牢打实, 一步一步成长为如日中天的国内最大规模IDC和最大市场占有率的公司.<br>盛大云诞生之时, 没有实现飞天类似底层平台, 然后高管无视技术瓶颈等问题, 匆匆忙忙推向市场, 而用户在享受这种市场折扣优惠的红利后出现了数据丢失的严峻问题, 用户才如梦初醒“妈蛋, 被骗了”. 原来云计算不仅仅是价格上让利, 还要有保障.</p>
+<p>阿里云顺势推出了百倍补偿. 如果因阿里云原因导致业务中断, 按故障时间 * 100补偿给用户.</p>
+<p>阿里云官网在刚诞生时, 是长这样的:<br><img src="https://img.alicdn.com/tfscom/TB1MCJtJXXXXXbmXpXXXXXXXXXX.png" alt="1"></p>
+<p>12经历一次改版后, 长这样了:<br><img src="https://img.alicdn.com/tfscom/TB1UTtnJXXXXXbGXFXXXXXXXXXX.png" alt="2"></p>
+<p>13还经历一次改版:<br><img src="https://img.alicdn.com/tfscom/TB1jnRwJXXXXXXxXpXXXXXXXXXX.png" alt="3"></p>
+<p>14年改版后, 阿里云才和现在样子差不多了.</p>
+<p>而在12年以前, 阿里云发展得举步维艰, 连集团内部都无人敢用. 阿里云官网都没有享用到“淘宝CDN”, 我记得12年阿里云有次活动, 官网直接挂了, 这也充分证明在当年阿里云并没有直接享有到集团优势资源. 这个局面直到13年正明负责阿里云技术构架时才改变,<br>如果你有关注阿里云, 相信你对13年“阿里云负责处理双11当日30%交易”的新闻仍有印象.</p>
+<p>哦, 忘了提, 万网也是在13年并入阿里云. 但那只是企业构架整合, 直到15年阿里云才弃用万网品牌, 将服务彻底并入阿里云, 启用“阿里云.万网”新品牌.</p>
+<p>13年阿里云换帅, 王坚博士不再担任阿里云总裁, 改任阿里巴巴“首席架构师”. 网传王坚博士不会写代码, 很多阿里员工对此也颇有微词, 但王坚为阿里云所做出的贡献是阿里巴巴任何员工不能忘记的, 也许王坚博士没有让阿里云走上如日中天, 但他直接负责了阿里云出生和成长. 也许他不懂市场(“在王坚看来，既然云计算是公共服务，那它就像电、水等社会公共产品一样不需要销售人员”: <a href="http://cloud.51cto.com/art/201308/408696.htm)" target="_blank" rel="noopener">http://cloud.51cto.com/art/201308/408696.htm)</a>, 也许他真不懂代码…<br>在此后虽已看到王坚博士以阿里云方面代表出席一些重要场合, 但其已渐淡出用户的视野.</p>
+<p>14年, 15年, 阿里集团资源均大力发展O2O, 阿里云也没歇下, 先后与贵州, 新疆多地政府开展合作, 成为企业推动地方政务云计算化的典型. 阿里云至此傲首群雄, 彻底革了传统IDC的命.</p>
+<p>阿里集团上市后, 不久前财报上, 阿里云成为阿里增长最快业务, 让云计算再次跃入美国投资者的视野.</p>
+<p>王坚博士说过: “云计算成功的时候, 是服务千家万户的时候, 就像自来水一样, 按需求使用按需付费. 你不必关心这滴自来水来自哪个水厂, 你相信它是最适合你的水就可以使用它了.”, 阿里云虽然国门内已冠首, 但在14年启动的走向国际化的战略, 对阿里云来说还有很长的路要走.</p>
+]]></content>
+      
+        <categories>
+            
+            <category> 生活笔记 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[回顾《暗夜骑士崛起》有感]]></title>
+      <url>/2015/08/11/selina-kyle-in-the-dark-knight-rises/</url>
+      <content type="html"><![CDATA[<p>The Dark Knight Rises中, 蝙蝠侠(布鲁斯.韦恩)要求猫女(瑟琳娜.凯尔)带其去见贝恩(Boss级反派), 瑟琳娜.凯尔为寻自保将布鲁斯反锁在了贝恩的牢笼里.</p>
+<p><img src="https://img.alicdn.com/tfscom/TB1_dIuIVXXXXbnXVXXXXXXXXXX.png" alt="1"><br><img src="https://img.alicdn.com/tfscom/TB1I7IwIVXXXXX4XVXXXXXXXXXX.png" alt="2"><br><img src="https://img.alicdn.com/tfscom/TB1laApIVXXXXadaXXXXXXXXXXX.png" alt="3"></p>
+<p>而在布鲁斯脊骨被贝恩打断, 站不起来时, 瑟琳娜.凯尔面露愧疚之色. 我想她此时此刻心中不仅仅是愧疚吧. 把被自己陷害和欺骗的受害者送上了死路, 直到最后一刻才觉得自己爱上了他为他担忧. 在这里感谢诺兰导演的这部《黑暗骑士崛起》, 刷新了我对超级英雄影视作品的认知.</p>
+<p><img src="https://img.alicdn.com/tfscom/TB1Y3kPIVXXXXXbXXXXXXXXXXXX.png" alt="4"></p>
+]]></content>
+      
+        <categories>
+            
+            <category> 生活笔记 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[NGINX简单配置 让SHA256证书支持XP SP1/SP2]]></title>
+      <url>/2015/08/06/nginx-ssl-sha256-support-xp-ie-and-ie7/</url>
+      <content type="html"><![CDATA[<p>因为技术更新迭代的原因, XP的电脑上的IE6/IE7不支持sha256签名算法. 而XP用户在国内尚有约10%的市场占有率, 我们应该怎样才能让我们的网站https业务支持到XP呢?</p>
+<h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><p>在介绍方法之前, 给大家介绍下另外一个概念： SNI(<a href="https://en.wikipedia.org/wiki/ServerNameIndication)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/ServerNameIndication)</a>: 是用于让单个IP支持多个SSL证书配置的TLS协议扩展. 原理就是浏览器在TCP握手时将域名哈希信息和随机种子一起发送给服务器, 服务器根据域名去配置中寻找不同的SSL配置实现同IP多证书.<br>SNI并不是所有浏览器都支持的. SNI是05年以后陆续被各大系统和浏览器厂商加入到特性中的. 主流操作系统及浏览器市场兼容性如下:</p>
+<table>
+<thead>
+<tr>
+<th>浏览器</th>
+<th>特性(SNI 支持)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IE</td>
+<td>7+ (Windows Vista+), (Windows XP/03及更早系统上任何版本IE浏览器均不支持SNI).</td>
+</tr>
+<tr>
+<td>Firefox</td>
+<td>2.0+</td>
+</tr>
+<tr>
+<td>Opera</td>
+<td>8.0+</td>
+</tr>
+<tr>
+<td>Opera Mobile</td>
+<td>10.1+ (Android)</td>
+</tr>
+<tr>
+<td>Chrome</td>
+<td>6+ (XP)</td>
+</tr>
+<tr>
+<td>Chrome</td>
+<td>5.0.342.1+ (OS X)</td>
+</tr>
+<tr>
+<td>Safari</td>
+<td>3.0+ (Mac OS X 10.5.6+, Windows Vista+)</td>
+</tr>
+<tr>
+<td>Safari</td>
+<td>(iOS 4.0+)</td>
+</tr>
+<tr>
+<td>Android 默认浏览器</td>
+<td>(Android 3.0+)</td>
+</tr>
+<tr>
+<td>BlackBerry 默认浏览器</td>
+<td>(BlackBerry 10+)</td>
+</tr>
+<tr>
+<td>Windows Phone</td>
+<td>7+</td>
+</tr>
+</tbody>
+</table>
+<p>可以看出, 已流行起来的现在代浏览器(Firefox, Chrome, Safari和Android/iOS浏览器)均早已支持SNI, 而XP上的IE6/IE7不支持SNI, IE6/IE7不认SHA256证书只认SHA1证书, 而且不会对SHA1证书出任何警告. 那么我们就可以用是否支持SNI来认定浏览器是否支持SHA256. 默认给SHA1证书, 支持SNI时给SHA256证书就行了.</p>
+<p>我们正好可以利用SNI的此特性, 对支持SNI的现代化浏览器/系统提供SHA256以支持更安全的加密通信, 对不支持SNI的浏览器做SHA1证书以向下兼容. 即可达到SHA256+SHA1证书实现100%的浏览器市场占有率.</p>
+<h4 id="成本"><a href="#成本" class="headerlink" title="成本"></a>成本</h4><p>你需要多申请一份sha1算法的证书. 推荐使用<a href="https://www.wosign.com/" target="_blank" rel="noopener">WoSign</a>提供的免费SSL证书. 申请时一定选择英文+sha1的.</p>
+<h4 id="开始干"><a href="#开始干" class="headerlink" title="开始干"></a>开始干</h4><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">http&#123;  </span><br><span class="line">    ...</span><br><span class="line">    <span class="section">server</span> &#123;</span><br><span class="line">        <span class="attribute">server_name</span>                 xxx;  <span class="comment">#这儿不能写我网站的域名, 也就是www.it68.com.cn, 原因请自己想象</span></span><br><span class="line">        <span class="attribute">listen</span>                      <span class="number">443</span> ssl;</span><br><span class="line">        <span class="attribute">ssl</span>                         <span class="literal">on</span>;</span><br><span class="line">        <span class="attribute">ssl_certificate</span>             /home/ssl/it68_sha1.crt;</span><br><span class="line">        <span class="attribute">ssl_certificate_key</span>         /home/ssl/it68_sha1.pem;</span><br><span class="line">        <span class="attribute">ssl_protocols</span>               SSLv3 TLSv1 TLSv1.<span class="number">1</span> TLSv1.<span class="number">2</span>; <span class="comment">#IE6只支持SSLv3, 若要用此方式必需启用...</span></span><br><span class="line">        <span class="attribute">ssl_session_cache</span>           shared:SSL:<span class="number">10m</span>;</span><br><span class="line">        <span class="attribute">ssl_session_timeout</span>         <span class="number">10m</span>;</span><br><span class="line"></span><br><span class="line">        <span class="attribute">location</span> / &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="section">server</span> &#123;</span><br><span class="line">        <span class="attribute">server_name</span>                 <span class="regexp">*.it</span>68.com.cn;</span><br><span class="line">        <span class="attribute">listen</span>                      <span class="number">443</span> ssl spdy;</span><br><span class="line">        <span class="attribute">ssl</span>                         <span class="literal">on</span>;</span><br><span class="line">        <span class="attribute">ssl_certificate</span>             /home/ssl/it68_sha256.crt;</span><br><span class="line">        <span class="attribute">ssl_certificate_key</span>         /home/ssl/it68_sha256.pem;</span><br><span class="line">        <span class="attribute">ssl_prefer_server_ciphers</span>   <span class="literal">on</span>;</span><br><span class="line">        <span class="attribute">ssl_ciphers</span>                 ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4;</span><br><span class="line">        <span class="attribute">ssl_protocols</span>               TLSv1 TLSv1.<span class="number">1</span> TLSv1.<span class="number">2</span>;</span><br><span class="line">        <span class="attribute">ssl_session_cache</span>           shared:SSL:<span class="number">10m</span>;</span><br><span class="line">        <span class="attribute">ssl_session_timeout</span>         <span class="number">10m</span>;</span><br><span class="line">        <span class="attribute">ssl_stapling</span>                <span class="literal">on</span>;</span><br><span class="line">        <span class="attribute">spdy_headers_comp</span>           <span class="number">9</span>;</span><br><span class="line"></span><br><span class="line">        <span class="attribute">location</span> / &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="运行效果"><a href="#运行效果" class="headerlink" title="运行效果"></a>运行效果</h4><p>IE6/IE7<br><img src="https://img.alicdn.com/tfscom/TB1D91_IVXXXXb8XVXXXXXXXXXX.png" alt="ie"></p>
+<p>现代浏览器<br><img src="https://img.alicdn.com/tfscom/TB1k9PkIVXXXXaGXpXXXXXXXXXX.png" alt="new"></p>
+<h4 id="后话"><a href="#后话" class="headerlink" title="后话"></a>后话</h4><p>如果您不懂技术又想占有更全的浏览器市场, 欢迎联系我帮您配置, 收费100元/台服务器. 微信: xiaohuilam1992.</p>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[弱者与强者的故事]]></title>
+      <url>/2015/08/04/the-story-about-weakness/</url>
+      <content type="html"><![CDATA[<p>强者与弱者搬桶装水, 一桶水重80斤, 强者1只手就能提起来, 弱者需要双手很费劲地搬, 如果两个人搬上100桶水, 被强者搬的100桶水掉地上的多还是弱者多? 一般人的答案是, 当然是强者掉地上的水少了. 因为他们力气大, 搬得很轻松.</p>
+<p>没错, 强者搬80斤的东西是挺轻松的, 但是正是因为这种“一只手”的轻松让强者不再把搬水当一回事. 洒地上的水也许不少, 而弱者小心翼翼, 虽然失败不可避免但他们会尽量发挥最好的水平. 所以, 我觉得弱者搬的水洒得更少.</p>
+]]></content>
+      
+        <categories>
+            
+            <category> 生活笔记 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[[Mac福利]IT乐吧Alfredworkflow放出]]></title>
+      <url>/2015/07/26/it68-alfredworkflow-released/</url>
+      <content type="html"><![CDATA[<p>这个Workflow一直是老夫自己玩用的, 虽然本博客浏览量小, 放出来给这个博客的Mac读者用用也是挺不错的～.<br>功能有: </p>
+<ol>
+<li>it68关键字跳到首页+列出首页文章, </li>
+<li>it68 [keyword] 搜索包含[keyword]的文章.</li>
+</ol>
+<p><strong><em>截图</em></strong><br><img src="https://img.alicdn.com/tfscom/TB1X6i8IpXXXXXCaXXXXXXXXXXX.png" alt="1"><br><img src="https://img.alicdn.com/tfscom/TB110HuIpXXXXcNXVXXXXXXXXXX.png" alt="2"><br><img src="https://img.alicdn.com/tfscom/TB1ar6zIpXXXXbdaXXXXXXXXXXX.png" alt="3"></p>
+<p><a href="http://t.cn/RLK7ELw" target="_blank" rel="noopener">下载地址</a></p>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[[Mac福利]天猫是个好图床AlfredWorkflow]]></title>
+      <url>/2015/07/25/tmall-casa-alfred-workflow-released/</url>
+      <content type="html"><![CDATA[<p>Alfred是Mac上键盘流必备的一款APP, 使用Alfred熟练后可以很快捷地在多个应用中切换, 或者在sublime text写代码时查dash文档. 总之你用了过后你才能知道它的好处. 好了废话不多说快来看老夫写的这个alfredworkflow吧.</p>
+<p>功能演示</p>
+<ol>
+<li><p>选中你想要上传的图片<br><img src="https://img.alicdn.com/tfscom/TB1lU.nIpXXXXb5aXXXXXXXXXXX.png" alt="选择"></p>
+</li>
+<li><p>激活Alfred的内置文件操作面板(快捷键)<br><img src="https://img.alicdn.com/tfscom/TB1glj4IpXXXXbRaXXXXXXXXXXX.png" alt="热键"></p>
+</li>
+<li><p>等待上传完成的通知(看文件总大小而定)<br><img src="https://img.alicdn.com/tfscom/TB12C2RIpXXXXbUaXXXXXXXXXXX.png" alt="上传"></p>
+</li>
+<li><p>粘贴即可使用<br><img src="https://img.alicdn.com/tfscom/TB19CYtIpXXXXbuapXXXXXXXXXX.png" alt="完成"></p>
+</li>
+</ol>
+<p><a href="http://t.cn/RLKpwKN" target="_blank" rel="noopener">下载地址</a></p>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[IT68模板放出]]></title>
+      <url>/2015/07/22/new-template-released/</url>
+      <content type="html"><![CDATA[<p>在上次改版后, 有几位朋友问过我想要新的tumblr模板.其实这个模板本身是是来自自于IUNI团队官方博客, 是在wordpress上使用的, 我将其移植到了Tumblr!上.既然有朋友喜欢,那在这里就放出来</p>
+<p>发文图片说明</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">"//img.alicdn.com/tfscom/TB19FFBIFXXXXaCXVXXXXXXXXXX.gif"</span> <span class="attr">data-1x-src</span>=<span class="string">"普通非视网膜屏@1x图片"</span> <span class="attr">data-src</span>=<span class="string">"视网膜屏@2x图片"</span> <span class="attr">alt</span>=<span class="string">""</span> <span class="attr">style</span>=<span class="string">"width:100%;height:auto;max-width:图片宽;max-height:图片高"</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>演示图</p>
+<p>iPhone<br><img src="https://img.alicdn.com/tfscom/TB1jqR_IpXXXXc9aXXXXXXXXXXX.jpg" alt="1"></p>
+<p>IE6<br><img src="https://img.alicdn.com/tfscom/TB1n4AoIpXXXXXwaXXXXXXXXXXX.png" alt="2"></p>
+<p>IE7<br><img src="https://img.alicdn.com/tfscom/TB14SwRIFXXXXbraXXXXXXXXXXX.png" alt="3"></p>
+<p>模板地址<br><a href="http://t.cn/RLKDSvG" target="_blank" rel="noopener">下载地址</a></p>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+            <category> 网站公告 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[PDO bindParam 与 bindValue 的区别]]></title>
+      <url>/2015/07/22/the-difference-between-pdo-bindvalue-and-bindparam/</url>
+      <content type="html"><![CDATA[<p>PDOStatement::bindParam 与 PDOStatement::bindValue不同, 变量被以引用方式绑定到点位符上而且仅仅当调用PDOStatement::execute()时才会去计算具体被绑定变量在PDOStatement::execute()被调用时的值. </p>
+<p>So, for example:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line">$sex = <span class="string">'male'</span>;</span><br><span class="line">$s = $dbh-&gt;prepare(<span class="string">'SELECT name FROM students WHERE sex = :sex'</span>);</span><br><span class="line">$s-&gt;bindParam(<span class="string">':sex'</span>, $sex); <span class="comment">// use bindParam to bind the variable</span></span><br><span class="line">$sex = <span class="string">'female'</span>;</span><br><span class="line">$s-&gt;execute(); <span class="comment">// 将执行 WHERE sex = 'female'</span></span><br></pre></td></tr></table></figure>
+<p>or</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>  </span><br><span class="line">$sex = <span class="string">'male'</span>;</span><br><span class="line">$s = $dbh-&gt;prepare(<span class="string">'SELECT name FROM students WHERE sex = :sex'</span>);</span><br><span class="line">$s-&gt;bindValue(<span class="string">':sex'</span>, $sex); <span class="comment">// use bindValue to bind the variable's value</span></span><br><span class="line">$sex = <span class="string">'female'</span>;</span><br><span class="line">$s-&gt;execute(); <span class="comment">// 将执行 WHERE sex = 'male'</span></span><br></pre></td></tr></table></figure>
+<p>来源于Stackoverflow: <a href="http://stackoverflow.com/questions/1179874/what-is-the-difference-between-bindparam-and-bindvalue#answer-5077108" target="_blank" rel="noopener">What is the difference between bindParam and bindValue?</a></p>
+]]></content>
+      
+        <categories>
+            
+            <category> 技术文章 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[IT乐吧使用全新UI 迁博至tumblr]]></title>
+      <url>/2015/05/03/it68-new-ui-rebuild-and-move-to-tumblr/</url>
+      <content type="html"><![CDATA[<p>IT乐吧已经于近日改版使用全新的UI，并全博迁入到tumblr，改进这个模板总共花费我3天时间(原模板是blog.iunios.com)，很喜欢iuniOS风格，也喜欢这这个模板，原先的blogger也已经不能满足我现时的发博需求了，长痛不如短痛(尽管我很少发博客了)，我就一次迁到tumblr吧。<br>博客tumblr模板将在未来某时放出。敬请期待。</p>
+]]></content>
+      
+        <categories>
+            
+            <category> 网站公告 </category>
+            
+        </categories>
+        
+        
+    </entry>
+    
+  
+  
+    
+    <entry>
+      <title><![CDATA[404]]></title>
+      <url>/404.html</url>
+      <content type="html"><![CDATA[<p>你对我博客做了什么，竟然找不到该页了</p>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[关于我]]></title>
+      <url>/about/index.html</url>
+      <content type="html"><![CDATA[<p>我叫蓝小灰，男，90后，PHPer，重庆人，未婚，<br>常年活动在上海，<br>喜欢美女，游戏，咖啡和代码，<br>真人比照片帅，这是真的🙈</p>
+<p>给你讲几个故事</p>
+<h3 id="故事1-一个关于“竹虫”的故事"><a href="#故事1-一个关于“竹虫”的故事" class="headerlink" title="故事1: 一个关于“竹虫”的故事"></a>故事1: 一个关于“竹虫”的故事</h3><p>小时候我家穷，非常穷的那种，我印象中小时候家里是点煤油灯的，没装灯泡，<br>在我大约两三岁时村里通电了，但还是买不起风扇，最便宜的电器也买不起，<br>竹虫是个可爱的小昆虫，足上有小刺，但不会伤人，<br>然后这小生灵它的翅膀很大，所以我们小时候经常当风扇用，<br>可是我小时候分不清这小昆虫和马蜂的区别，<br>有一次和村里的小伙伴去树木里面玩，碰到了一个马蜂窝，<br>然后他们骗我说那是竹虫，<br>然后你应该知道的马蜂的毒性很大，<br>我那时候很小，根本不懂事，<br>然后我就傻傻的伸手去抓，<br>然后一堆的马蜂就飞过来蜇我，<br>我当时就当晕了过去，<br>然后我的小伙伴也吓傻了，<br>他们跑到我奶奶家，告诉了我奶奶，<br>然后我因为是男孩子，奶奶非常疼我，<br>她就跑到我家去找爸爸，<br>我爸爸也非常疼我，背着我到了我舅公家，他家是开医馆的，<br>然后我舅公给我动手术，<br>手术过程中还开了刀，<br>直到今天，我的额头上还有那时候开刀的疤痕。只是没有那么明显而已。</p>
+<h3 id="故事2-小学暗恋两年的女孩"><a href="#故事2-小学暗恋两年的女孩" class="headerlink" title="故事2: 小学暗恋两年的女孩"></a>故事2: 小学暗恋两年的女孩</h3><p>在我上小学五年级的时候，班上来了一个女孩，非常清纯，简直美若天仙的那种，她的名叫攀，我从第一个看到她，就非常喜欢。从那时候开始我就一直暗恋着她，我在小学四年级前成绩非常差，但为了取得她的注意，我学习非常努力，一直是班上前三名，可惜直到小学六年级毕业都没有向她表白，和她累计说过的话也没超过十句，<br>后来上了初中，她跟我一所学校（我们镇上就只有一所中学校），不同班级，然后在初二上册，我就没再看到过她了。不清楚她转学了还是退学（那时候农村退学的孩子非常多），我没敢问任何同学，因为家里穷害怕被人笑话。</p>
+<h3 id="故事3-第一次跟PHP接触"><a href="#故事3-第一次跟PHP接触" class="headerlink" title="故事3: 第一次跟PHP接触"></a>故事3: 第一次跟PHP接触</h3><p>高中的时候非常喜欢玩电脑，但是家里还是穷买不起，然后学校附近有网吧，我一到周末就去出去玩。<br>在学校边上过个路口有一家书店，学校附近的书店如果你去过应该知道，只要你不把书带走，你在书店可以随便看的，然后我就经常去那里找各种关于电脑方面的杂志。<br>一次偶然的机会，我看到了那本《电脑爱好者》杂志，里面有讲到了PHP入门，然后那是我第一次租书，后来因为书里面讲的太精彩，那本书给我留了下来。可是现在已经找不到了。<br>在那里面讲到了Apache+PHP+MySQL在Windows下面的搭建方法，和第一个PHP Hello world程序，以及会话控制。 </p>
+<h3 id="故事4-第一个陪逛街的女孩"><a href="#故事4-第一个陪逛街的女孩" class="headerlink" title="故事4: 第一个陪逛街的女孩"></a>故事4: 第一个陪逛街的女孩</h3><p>时间线一下到了2014年，所在的那家公司新加入了一个很漂亮的同事。<br>我感觉我喜欢上她了，但是出于我的性格加她的任何联络方式。<br>记得在她离职前N天，有一天和她一起下班，可是CTO让我回去加班我非常不开心。<br>突然有一天，她从我们公司群退出了，我心里特伤心， 然后在晚上她加了我微信。我又差点幸福得哭了出来，至少能以后陪女神说说话了。<br>在过后大概一周左右吧，她邀请我陪她逛街，南京西路，我果断去了。<br>后面她和我的关系非常好，她甚至为了我去学PHP。<br>只可惜后面缘尽，现在已经不再联系。<br>而我，周末偶尔去南京西路逛过的地方静坐着。 </p>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[简历]]></title>
+      <url>/resume-of-xiaohuilam/index.html</url>
+      <content type="html"><![CDATA[<p>我在上海，</p>
+<script rel="nofollow" data-cfasync="false">document.write('我的邮箱：\x3c\x61\x20\x68\x72\x65\x66\x3d\x22\x6d\x61\x69\x6c\x74\x6f\x3a\x78\x69\x61\x6f\x68\x75\x69\x2e\x6c\x61\x6d\x40\x69\x63\x6c\x6f\x75\x64\x2e\x63\x6f\x6d\x22\x3e\x78\x69\x61\x6f\x68\x75\x69\x2e\x6c\x61\x6d\x40\x69\x63\x6c\x6f\x75\x64\x2e\x63\x6f\x6d\x3c\x2f\x61\x3e');</script><br>  
+<script rel="nofollow" data-cfasync="false">document.write('我的手机：'+(0x3fb3befcf)+'（如果可以，请用短讯、电邮代替呼叫）');</script>  
+
+<p>–</p>
+<h3 id="PHP高级工程师"><a href="#PHP高级工程师" class="headerlink" title="PHP高级工程师"></a>PHP高级工程师</h3><h5 id="自身技能"><a href="#自身技能" class="headerlink" title="自身技能"></a>自身技能</h5><ul>
+<li>精通Laravel、CodeIgniter、ThinkPHP常见PHP框架，精通MVC开发模式，有过自写框架经验；</li>
+<li>设计功能流转示意图，编写技术方案，参与技术研讨、评审，完成数据建模，独立或参与项目组完成编码；</li>
+<li>定期汇报项目/功能进度；</li>
+<li>BUG管理；</li>
+<li>…</li>
+</ul>
+<h5 id="期望薪资"><a href="#期望薪资" class="headerlink" title="期望薪资"></a>期望薪资</h5><ul>
+<li>￥280000.00/年</li>
+</ul>
+<h3 id="高级网络安全工程师"><a href="#高级网络安全工程师" class="headerlink" title="高级网络安全工程师"></a>高级网络安全工程师</h3><h5 id="自身技能-1"><a href="#自身技能-1" class="headerlink" title="自身技能"></a>自身技能</h5><ul>
+<li>制定企业安全规范，培训研发人员网络安全技能和意识；</li>
+<li>黑盒检测 ( 半自动 ) 企业业务接口安全性，编写测试用例；</li>
+<li>编写工具完成代码安全性扫描，制作代码安全性质量报告；</li>
+<li>与业界互换信息资源，减少0日 ( 0day ) 漏洞对企业安全的威胁。</li>
+</ul>
+<h5 id="期望薪资-1"><a href="#期望薪资-1" class="headerlink" title="期望薪资"></a>期望薪资</h5><ul>
+<li>￥250000.00/年</li>
+</ul>
+<h3 id="工作经验"><a href="#工作经验" class="headerlink" title="工作经验"></a>工作经验</h3><ul>
+<li>(上海)小站教育：2017.10~ (高级PHP工程师)；</li>
+<li>(上海)永利宝金融信息服务有限公司：2016.3~2017.10（17个月，网络安全工程师）；</li>
+<li>(上海)寰投信息科技有限公司：2015.3~2016.3 (12月，高级PHP工程师)；</li>
+<li>(上海)大润发飞牛网：2014.8~2015.3 (7个月，PHP工程师 &amp; 网络安全工程师)；</li>
+<li>(上海)永利宝金融信息服务有限公司: 2014.2~2014.8 (6个月，PHP工程师 &amp; 网络安全工程师)；</li>
+</ul>
+<h3 id="荣誉奖项"><a href="#荣誉奖项" class="headerlink" title="荣誉奖项"></a>荣誉奖项</h3><ul>
+<li>2014~2015年度阿里安全总榜 rank 6 (已上升至rank 5) <a href="http://security.alibaba.com/top.htm" target="_blank" rel="noopener">http://security.alibaba.com/top.htm</a></li>
+<li>2014年度阿里巴巴高级安全专家证书</li>
+<li>2012年阿里巴巴云计算全国开发者大赛第2名 </li>
+</ul>
+]]></content>
+    </entry>
+    
+  
+</search>
