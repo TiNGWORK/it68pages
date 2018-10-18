@@ -6,6 +6,24 @@
     
     
   <url>
+    <loc>https://www.it68.com.cn/2015/08/04/the-story-about-weakness/</loc>
+    <lastmod>2018-09-29T15:48:48.779Z</lastmod>
+    <data>
+        <display>
+        <title>弱者与强者的故事</title>
+        <pubTime>2015-08-03T21:51:42.000Z</pubTime>
+        
+         
+           
+             
+              <breadCrumb title="生活笔记" url="https://www.it68.com.cn/categories/daily/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>https://www.it68.com.cn/2015/07/25/tmall-casa-alfred-workflow-released/</loc>
     <lastmod>2018-09-29T15:48:48.779Z</lastmod>
     <data>
@@ -24,17 +42,17 @@
 
     
   <url>
-    <loc>https://www.it68.com.cn/2015/08/04/the-story-about-weakness/</loc>
-    <lastmod>2018-09-29T15:48:48.779Z</lastmod>
+    <loc>https://www.it68.com.cn/2016/06/09/nights-watch-a-automatic-web-application-security-scanner/</loc>
+    <lastmod>2018-09-29T15:48:48.778Z</lastmod>
     <data>
         <display>
-        <title>弱者与强者的故事</title>
-        <pubTime>2015-08-03T21:51:42.000Z</pubTime>
+        <title>Night's watch -- 自动漏洞扫描工具</title>
+        <pubTime>2016-06-09T12:58:28.000Z</pubTime>
         
          
            
              
-              <breadCrumb title="生活笔记" url="https://www.it68.com.cn/categories/daily/"/>
+              <breadCrumb title="技术文章" url="https://www.it68.com.cn/categories/tech/"/>
           
         </display>
     </data>
@@ -78,17 +96,20 @@
 
     
   <url>
-    <loc>https://www.it68.com.cn/2016/06/09/nights-watch-a-automatic-web-application-security-scanner/</loc>
-    <lastmod>2018-09-29T15:48:48.778Z</lastmod>
+    <loc>https://www.it68.com.cn/2015/07/22/new-template-released/</loc>
+    <lastmod>2018-09-29T15:48:48.777Z</lastmod>
     <data>
         <display>
-        <title>Night's watch -- 自动漏洞扫描工具</title>
-        <pubTime>2016-06-09T12:58:28.000Z</pubTime>
+        <title>IT68模板放出</title>
+        <pubTime>2015-07-21T21:11:33.000Z</pubTime>
         
          
            
              
               <breadCrumb title="技术文章" url="https://www.it68.com.cn/categories/tech/"/>
+          
+             
+              <breadCrumb title="网站公告" url="https://www.it68.com.cn/categories/tech/site-anounce/"/>
           
         </display>
     </data>
@@ -107,27 +128,6 @@
            
              
               <breadCrumb title="技术文章" url="https://www.it68.com.cn/categories/tech/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://www.it68.com.cn/2015/07/22/new-template-released/</loc>
-    <lastmod>2018-09-29T15:48:48.777Z</lastmod>
-    <data>
-        <display>
-        <title>IT68模板放出</title>
-        <pubTime>2015-07-21T21:11:33.000Z</pubTime>
-        
-         
-           
-             
-              <breadCrumb title="技术文章" url="https://www.it68.com.cn/categories/tech/"/>
-          
-             
-              <breadCrumb title="网站公告" url="https://www.it68.com.cn/categories/tech/site-anounce/"/>
           
         </display>
     </data>
@@ -225,12 +225,12 @@
 
     
   <url>
-    <loc>https://www.it68.com.cn/2016/05/25/how-important-the-random-algorithm-is/</loc>
+    <loc>https://www.it68.com.cn/2015/07/26/it68-alfredworkflow-released/</loc>
     <lastmod>2018-09-29T15:48:48.772Z</lastmod>
     <data>
         <display>
-        <title>随机算法在APP安全中的重要性</title>
-        <pubTime>2016-05-25T12:54:38.000Z</pubTime>
+        <title>[Mac福利]IT乐吧Alfredworkflow放出</title>
+        <pubTime>2015-07-26T07:49:08.000Z</pubTime>
         
          
            
@@ -243,12 +243,12 @@
 
     
   <url>
-    <loc>https://www.it68.com.cn/2015/07/26/it68-alfredworkflow-released/</loc>
+    <loc>https://www.it68.com.cn/2016/05/25/how-important-the-random-algorithm-is/</loc>
     <lastmod>2018-09-29T15:48:48.772Z</lastmod>
     <data>
         <display>
-        <title>[Mac福利]IT乐吧Alfredworkflow放出</title>
-        <pubTime>2015-07-26T07:49:08.000Z</pubTime>
+        <title>随机算法在APP安全中的重要性</title>
+        <pubTime>2016-05-25T12:54:38.000Z</pubTime>
         
          
            
@@ -296,7 +296,6 @@
     </url>
 
     
-    
   <url>
     <loc>https://www.it68.com.cn/2016/02/02/google-search-in-china-gg-gg-sou/</loc>
     <lastmod>2018-09-29T15:48:48.770Z</lastmod>
@@ -314,4 +313,5 @@
     </data>
     </url>
 
+    
 </urlset>
