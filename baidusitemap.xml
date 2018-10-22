@@ -42,24 +42,6 @@
 
     
   <url>
-    <loc>https://www.it68.com.cn/2015/07/22/the-difference-between-pdo-bindvalue-and-bindparam/</loc>
-    <lastmod>2018-09-29T15:48:48.778Z</lastmod>
-    <data>
-        <display>
-        <title>PDO bindParam 与 bindValue 的区别</title>
-        <pubTime>2015-07-21T17:03:05.000Z</pubTime>
-        
-         
-           
-             
-              <breadCrumb title="技术文章" url="https://www.it68.com.cn/categories/tech/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://www.it68.com.cn/2015/08/11/selina-kyle-in-the-dark-knight-rises/</loc>
     <lastmod>2018-09-29T15:48:48.778Z</lastmod>
     <data>
@@ -71,6 +53,24 @@
            
              
               <breadCrumb title="生活笔记" url="https://www.it68.com.cn/categories/daily/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://www.it68.com.cn/2015/07/22/the-difference-between-pdo-bindvalue-and-bindparam/</loc>
+    <lastmod>2018-09-29T15:48:48.778Z</lastmod>
+    <data>
+        <display>
+        <title>PDO bindParam 与 bindValue 的区别</title>
+        <pubTime>2015-07-21T17:03:05.000Z</pubTime>
+        
+         
+           
+             
+              <breadCrumb title="技术文章" url="https://www.it68.com.cn/categories/tech/"/>
           
         </display>
     </data>
