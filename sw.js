@@ -24,21 +24,21 @@ var precacheUrls = [];
 
   precacheUrls.push('/');
 
-  precacheUrls.push('/2017/10/14/make-your-sublime-php-ide/');
+  precacheUrls.push('/2017/10/08/markdown-translated-to-html-responsive-image/');
 
   precacheUrls.push('/2018/09/19/make-swoolefy-laravel-without-packges/');
 
-  precacheUrls.push('/2016/06/09/nights-watch-a-automatic-web-application-security-scanner/');
+  precacheUrls.push('/2015/07/22/new-template-released/');
 
   precacheUrls.push('/2016/02/02/google-search-in-china-gg-gg-sou/');
 
-  precacheUrls.push('/2016/05/25/how-important-the-random-algorithm-is/');
+  precacheUrls.push('/2016/06/09/nights-watch-a-automatic-web-application-security-scanner/');
 
 toolbox.precache(precacheUrls);
 toolbox.options = {"networkTimeoutSeconds":5};
 
 
-toolbox.router.any(/hm.baidu.com/, toolbox.networkOnly);
+toolbox.router.any(/www.it68.com.cn/, toolbox.networkOnly);
 
 toolbox.router.any(/.*\.(js|css|jpg|jpeg|png|gif)$/, toolbox.cacheFirst);
 
