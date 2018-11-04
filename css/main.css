@@ -1800,8 +1800,6 @@ p.read_more_container {
     -webkit-font-smoothing: antialiased;
 }
 
-body, button, input, select, textarea {}
-
 .entry-title {
     font-weight: 400;
 }
