@@ -30,7 +30,7 @@ var precacheUrls = [];
 
   precacheUrls.push('/2015/07/22/new-template-released/');
 
-  precacheUrls.push('/2015/08/22/google-search-tool-without-f4ck-wall/');
+  precacheUrls.push('/2016/02/02/google-search-in-china-gg-gg-sou/');
 
   precacheUrls.push('/2016/06/09/nights-watch-a-automatic-web-application-security-scanner/');
 
